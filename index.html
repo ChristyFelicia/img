@@ -66,56 +66,51 @@ color:white;
 <div id="gallery" class="grid"></div>
   
 <script>
-async function copyImage(btn, url) {
+    async function loadData() {
+        const gallery = document.getElementById('gallery');
+        try {
+            // 从同目录读取 data.json
+            const response = await fetch('data.json');
+            const data = await response.json();
 
-  try {
-    btn.innerText = "复制中...";
+            // 循环遍历数据并生成 HTML
+            data.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <h3>${item.title}</h3>
+                    <img src="${item.image}" crossorigin="anonymous">
+                    <button class="copy" onclick="copyImage(this, '${item.image}')">复制图片</button>
+                `;
+                gallery.appendChild(card);
+            });
+        } catch (e) {
+            console.error("数据加载失败:", e);
+            gallery.innerHTML = "<p>无法加载数据，请检查 data.json 路径是否正确。</p>";
+        }
+    }
 
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.src = url;
+    async function copyImage(btn, url) {
+        btn.innerText = "复制中...";
+        try {
+            // 因为图片和网页在同一个 GitHub Pages 项目下，属于同源
+            // 这次应该可以直接通过 fetch 获取并复制，不会触发跨域问题
+            const response = await fetch(url);
+            const blob = await response.blob();
+            await navigator.clipboard.write([
+                new ClipboardItem({ [blob.type]: blob })
+            ]);
+            btn.innerText = "已复制 ✅";
+        } catch (e) {
+            btn.innerText = "复制失败 ❌";
+            alert("复制失败，可能是浏览器权限限制");
+        }
+        setTimeout(() => { btn.innerText = "复制图片"; }, 2000);
+    }
 
-    await img.decode();
-
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
-
-    ctx.drawImage(img, 0, 0);
-
-    canvas.toBlob(async (blob) => {
-
-      if (!blob) {
-        alert("❌ 转换失败：图片可能存在跨域限制");
-        return;
-      }
-
-      try {
-        await navigator.clipboard.write([
-          new ClipboardItem({ "image/png": blob })
-        ]);
-
-        btn.innerText = "已复制 ✅";
-
-        setTimeout(() => {
-          btn.innerText = "复制图片";
-        }, 1500);
-
-      } catch (e) {
-        console.log(e);
-        alert("浏览器不支持复制图片，将下载");
-        downloadImage(url);
-      }
-
-    }, "image/png");
-
-  } catch (e) {
-    console.log(e);
-    alert("图片加载失败或跨域问题");
-  }
-}
+    // 页面加载完成后执行
+    loadData();
 </script>
+  
 </body>
 </html>
