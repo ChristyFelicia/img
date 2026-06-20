@@ -1,1 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
+<title>😊upup助手图片</title>
+
+<style>
+
+body{
+background:#071d49;
+color:white;
+font-family:sans-serif;
+padding:20px;
+}
+
+h1{
+text-align:center;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+gap:20px;
+}
+
+.card{
+background:#102c67;
+border-radius:15px;
+overflow:hidden;
+padding:15px;
+}
+
+img{
+width:100%;
+border-radius:10px;
+}
+
+button{
+margin-top:10px;
+width:100%;
+padding:10px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+}
+
+.copy{
+background:#1e90ff;
+color:white;
+}
+
+.download{
+background:#22c55e;
+color:white;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1> 😊upup助手图片</h1>
+
+<div id="gallery" class="grid"></div>
+
+<script>
+
+fetch('data.json')
+.then(r=>r.json())
+.then(data=>{
+
+const gallery=document.getElementById("gallery");
+
+data.forEach(item=>{
+
+gallery.innerHTML += `
+<div class="card">
+
+<img src="${item.image}">
+
+<h3>${item.title}</h3>
+
+<button class="copy"
+onclick="copyImage('${item.image}')">
+复制图片
+</button>
+
+<button class="download"
+onclick="downloadImage('${item.image}')">
+下载图片
+</button>
+
+</div>
+`;
+
+});
+
+});
+
+async function copyImage(url){
+
+try{
+
+const response=await fetch(url);
+
+const blob=await response.blob();
+
+await navigator.clipboard.write([
+new ClipboardItem({
+[blob.type]:blob
+})
+]);
+
+alert("图片已复制");
+
+}catch{
+
+alert("浏览器不支持复制图片");
+
+}
+
+}
+
+function downloadImage(url){
+
+const a=document.createElement("a");
+
+a.href=url;
+
+a.download="image";
+
+a.click();
+
+}
+
+</script>
+
+</body>
+</html>
