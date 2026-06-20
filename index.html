@@ -66,36 +66,6 @@ color:white;
 <div id="gallery" class="grid"></div>
   
 <script>
-
-fetch('data.json')
-.then(r => r.json())
-.then(data => {
-
-  const gallery = document.getElementById("gallery");
-
-  data.forEach(item => {
-
-    gallery.innerHTML += `
-      <div class="card">
-        <img src="${item.image}" crossorigin="anonymous">
-        <h3>${item.title || ''}</h3>
-
-        <button class="copy"
-          onclick="copyImage(this, '${item.image}')">
-          复制图片
-        </button>
-
-        <button class="download"
-          onclick="downloadImage('${item.image}')">
-          下载图片
-        </button>
-
-      </div>
-    `;
-  });
-
-});
-
 async function copyImage(btn, url) {
 
   try {
@@ -117,9 +87,14 @@ async function copyImage(btn, url) {
 
     canvas.toBlob(async (blob) => {
 
+      if (!blob) {
+        alert("❌ 转换失败：图片可能存在跨域限制");
+        return;
+      }
+
       try {
         await navigator.clipboard.write([
-          new ClipboardItem({ "image/jpg": blob })
+          new ClipboardItem({ "image/png": blob })
         ]);
 
         btn.innerText = "已复制 ✅";
@@ -130,25 +105,17 @@ async function copyImage(btn, url) {
 
       } catch (e) {
         console.log(e);
-        alert("当前浏览器不支持直接复制图片，将改为下载");
+        alert("浏览器不支持复制图片，将下载");
         downloadImage(url);
       }
 
-    }, "image/jpg");
+    }, "image/png");
 
   } catch (e) {
     console.log(e);
-    alert("复制失败，可能是跨域问题");
+    alert("图片加载失败或跨域问题");
   }
 }
-
-function downloadImage(url) {
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "image.jpg";
-  a.click();
-}
-
 </script>
 </body>
 </html>
